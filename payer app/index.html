@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prayer Time and Tasbih Counter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background-color: #ffffff;
+      color: #251103;
+      text-align: center;
+      padding: 15px 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    nav {
+      background-color: #251103;
+      text-align: center;
+      padding: 10px;
+    }
+    nav a {
+      color: #fff;
+      margin: 0 15px;
+      text-decoration: none;
+      font-size: 1.2em;
+    }
+    .slider {
+      width: 100%;
+      margin: 20px auto;
+      overflow: hidden;
+      max-width: 70%;
+      position: relative;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .slides {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+    .slides img {
+      width: 100%;
+    }
+    .prayer-time {
+      background-color: #fff;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      width: 60%;
+      text-align: center;
+    }
+    .prayer-time input {
+      padding: 10px;
+      width: 60%;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+    .prayer-time button {
+      padding: 10px 20px;
+      background-color: #251103;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .prayer-time table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+    }
+    .prayer-time th, .prayer-time td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    .tasbih {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .tasbih button {
+      padding: 15px;
+      border: none;
+      border-radius: 50%;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      font-size: 1.5em;
+    }
+    .tasbih img{
+      width: 160px;
+    }
+    .tasbih-count {
+      font-size: 2em;
+      margin: 15px 0;
+    }
+    #resetButton{
+    border-radius: 0%;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      background-color: #251103;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Prayer Time and Tasbih Counter</h1>
+  </header>
+  <nav>
+    <a href="#home">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</a>
+  </nav>
+  <div class="slider">
+    <div class="slides">
+      <img src="donate.jpeg" alt="Image 1">
+      <img src="tasbih.jpeg" alt="Image 2">
+      <img src="calendar.jpeg" alt="Image 3">
+    </div>
+  </div>
+  <div class="prayer-time">
+    <h3>Enter Your City for Prayer Times</h3>
+    <input type="text" id="cityInput" placeholder="Enter city name">
+    <button onclick="fetchPrayerTimes()">Get Prayer Times</button>
+    <table id="prayerTable"></table>
+  </div>
+  <div class="tasbih">
+    <h2>Tasbih Counter</h2>
+    <button id="incrementButton"><img src="DZ7A0181_cd20f312-89d1-4be7-a370-3c30a3aa0911-removebg-preview.png" alt="" class="count"></button>
+    <div class="tasbih-count" id="countDisplay">0</div>
+    <button id="resetButton">Reset</button>
+  </div>
+  <footer>
+    &copy; 2024 Prayer and Tasbih | Made By Hassan Raza
+  </footer>
+  <script>
+    let currentIndex = 0;
+    function showNextSlide() {
+      const slides = document.querySelector('.slides');
+      const totalSlides = slides.children.length;
+      currentIndex = (currentIndex + 1) % totalSlides;
+      slides.style.transform = `translateX(${currentIndex * -100}%)`;
+    }
+    setInterval(showNextSlide, 2000);
+
+    let count = 0;
+    const countDisplay = document.getElementById('countDisplay');
+    document.getElementById('incrementButton').addEventListener('click', () => {
+      count++;
+      countDisplay.textContent = count;
+    });
+    document.getElementById('resetButton').addEventListener('click', () => {
+      count = 0;
+      countDisplay.textContent = count;
+    });
+
+    function fetchPrayerTimes() {
+      const city = document.getElementById('cityInput').value;
+      if (!city) {
+        alert('Please enter a city.');
+        return;
+      }
+      const apiUrl = `http://api.aladhan.com/v1/timingsByAddress/07-12-2024?address=${city}&method=8`;
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const timings = data.data.timings;
+          const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha', 'Sunset'];
+          let output = '<tr><th>Prayer</th><th>Time</th></tr>';
+          prayers.forEach(prayer => {
+            if (timings[prayer]) {
+              output += `<tr><td>${prayer}</td><td>${timings[prayer]}</td></tr>`;
+            }
+          });
+          document.getElementById('prayerTable').innerHTML = output;
+        })
+        .catch(() => alert('Error fetching data.'));
+    }
+  </script>
+</body>
+</html>
